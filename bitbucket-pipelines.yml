@@ -1,0 +1,26 @@
+image: php:8.2
+
+pipelines:
+  default:
+    - step:
+        name: Install Dependencies
+        caches:
+          - composer
+          - node
+        script:
+          - apt-get update && apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev libwebp-dev
+          - docker-php-ext-configure gd --with-freetype --with-webp --with-jpeg
+          - docker-php-ext-install gd
+          - composer install --no-interaction --prefer-dist --optimize-autoloader
+          - npm install
+          - npm run prod
+    - step:
+        name: Run Tests
+        script:
+          - php artisan migrate --env=testing
+          - ./vendor/bin/phpunit
+    - step:
+        name: Deploy
+        deployment: production
+        script:
+          - echo "Deploy your application here"
